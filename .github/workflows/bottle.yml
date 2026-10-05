@@ -31,7 +31,7 @@ jobs:
       - name: Build
         run: |
           # The runner's old OpenSSL is in the way of the new one.
-          brew unlink openssl@1.1 || true
+          brew install --overwrite openssl@3
           brew install --build-bottle --verbose "$GITHUB_REPOSITORY_OWNER/tap/$FORMULA"
 
       - name: Test
