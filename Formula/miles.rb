@@ -2,16 +2,11 @@ class Miles < Formula
   desc "Port of GNOME Files (Nautilus) to macOS"
   homepage "https://github.com/astraldev/Miles"
   url "https://github.com/astraldev/Miles.git",
-      tag:      "51.0.1-mac.3",
-      revision: "adb4ff730f4ebd2a09953a7499293b3f23394ca5"
-  version "51.0.1-mac.3"
+      tag:      "51.0.1-mac.4",
+      revision: "63f884cc3ccbf4d34c26656fcb419ca9df449103"
+  version "51.0.1-mac.4"
   license "GPL-3.0-or-later"
   head "https://github.com/astraldev/Miles.git", branch: "mac-development"
-
-  bottle do
-    root_url "https://github.com/astraldev/homebrew-tap/releases/download/miles-51.0.1-mac.3"
-    sha256 arm64_sequoia: "94bb1de57fb782aaf98b4d9ecca612d090a8a352bf6ad211ffe171d70af3c166"
-  end
 
   depends_on "gettext" => :build
   depends_on "librsvg" => :build
