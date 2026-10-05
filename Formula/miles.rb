@@ -2,8 +2,9 @@ class Miles < Formula
   desc "Port of GNOME Files (Nautilus) to macOS"
   homepage "https://github.com/astraldev/Miles"
   url "https://github.com/astraldev/Miles.git",
-      revision: "6fb0a7892d81cfd93e54bb296c9fa69d48d4553e"
-  version "51.0.1"
+      tag:      "51.0.1-mac.2",
+      revision: "a46dd673c757066eeeab8a926c8e8e2e7d48c7db"
+  version "51.0.1-mac.2"
   license "GPL-3.0-or-later"
   head "https://github.com/astraldev/Miles.git", branch: "mac-development"
 
@@ -75,6 +76,6 @@ class Miles < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/miles --version")
+    assert_match "nautilus 51", shell_output("#{bin}/miles --version")
   end
 end
