@@ -1,0 +1,76 @@
+name: Bottle
+
+# Run by hand after the formula changed: builds it, uploads the bottle to a release of this
+# repository, and writes the bottle into the formula.
+on:
+  workflow_dispatch:
+    inputs:
+      formula:
+        description: The formula to bottle
+        default: miles
+
+permissions:
+  contents: write
+
+jobs:
+  bottle:
+    name: Bottle (Apple silicon)
+    # The bottle is poured on this version of macOS and newer.
+    runs-on: macos-15
+    timeout-minutes: 120
+    env:
+      FORMULA: ${{ inputs.formula }}
+      GH_TOKEN: ${{ github.token }}
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Build
+        run: brew install --build-bottle --verbose "$GITHUB_REPOSITORY_OWNER/tap/$FORMULA"
+
+      - name: Test
+        run: brew test "$GITHUB_REPOSITORY_OWNER/tap/$FORMULA"
+
+      - name: Bottle
+        id: bottle
+        run: |
+          version=$(brew info --json=v2 "$GITHUB_REPOSITORY_OWNER/tap/$FORMULA" | jq -r '.formulae[0].versions.stable')
+          tag=$FORMULA-$version
+          brew bottle --json --no-rebuild \
+            --root-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag" \
+            "$GITHUB_REPOSITORY_OWNER/tap/$FORMULA"
+          # brew names the file with two dashes, and downloads it with one.
+          for bottle in *--*.bottle.tar.gz; do
+            mv "$bottle" "$(echo "$bottle" | sed 's/--/-/')"
+          done
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the bottle
+        env:
+          TAG: ${{ steps.bottle.outputs.tag }}
+        run: |
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 ||
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes "Bottles for $TAG."
+          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber ./*.bottle.tar.gz
+
+      - name: Write the bottle into the formula
+        env:
+          TAG: ${{ steps.bottle.outputs.tag }}
+        run: |
+          brew bottle --merge --write --no-commit ./*.bottle.json
+          cd "$(brew --repository "$GITHUB_REPOSITORY_OWNER/tap")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula
+          git commit -m "$FORMULA: Add the bottle for $TAG"
+          git push "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:main
+
+      - name: Keep the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: ~/Library/Logs/Homebrew/
