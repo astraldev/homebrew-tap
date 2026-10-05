@@ -8,6 +8,11 @@ class Miles < Formula
   license "GPL-3.0-or-later"
   head "https://github.com/astraldev/Miles.git", branch: "mac-development"
 
+  bottle do
+    root_url "https://github.com/astraldev/homebrew-tap/releases/download/miles-51.0.1-mac.3"
+    sha256 arm64_sequoia: "94bb1de57fb782aaf98b4d9ecca612d090a8a352bf6ad211ffe171d70af3c166"
+  end
+
   depends_on "gettext" => :build
   depends_on "librsvg" => :build
   depends_on "meson" => :build
